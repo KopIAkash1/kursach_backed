@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание занятий</title>
+    <form action="/main" method="get">
+        <button type="submit" class="use-button"> Назад </button>
+    </form>
+    <style>
+        form{
+            position: absolute;
+            top: 0px;
+            left: 10px;
+        }
+        button {
+            background-color: #5cb85c; /* Цвет кнопки */
+            color: white; /* Цвет текста кнопки */
+            border: none; /* Убираем границу */
+            border-radius: 4px; /* Скругляем углы */
+            padding: 10px; /* Отступы внутри кнопки */
+            font-size: 20px; /* Размер шрифта */
+            cursor: pointer; /* Указатель при наведении */
+            margin-top: 20px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script>
+        function sortTable(columnIndex) {
+    const table = document.querySelector("table");
+    const rows = Array.from(table.rows).slice(1); // Получаем все строки, кроме заголовка
+
+    rows.sort((a, b) => {
+        const aText = a.cells[columnIndex].textContent;
+        const bText = b.cells[columnIndex].textContent;
+
+        if (aText === bText && columnIndex !== 1) {
+            // Если значения одинаковы, дополнительно сортируем по времени
+            const aTime = timeToMinutes(a.cells[1].textContent);
+            const bTime = timeToMinutes(b.cells[1].textContent);
+            return aTime - bTime; // В порядке возрастания
+        }
+
+        if (columnIndex === 1) {
+            // Для времени - сортировка от большего к меньшему
+            const aTime = timeToMinutes(aText);
+            const bTime = timeToMinutes(bText);
+            return aTime - bTime;
+        } else {
+            // Для остальных столбцов - лексикографическая сортировка
+            return aText.localeCompare(bText);
+        }
+    });
+
+    // Обновляем таблицу
+    rows.forEach(row => table.appendChild(row));
+
+    function timeToMinutes(time) {
+        const [start] = time.split("-");
+        const [hours, minutes] = start.split(":").map(Number);
+        return hours * 60 + minutes;
+    }
+}
+
+
+    </script>
+</head>
+<body>
+    <h1>Расписание занятий</h1>
+    <label for="sort">Сортировать по:</label>
+    <select id="sort" onchange="sortTable(this.selectedIndex)">
+        <option value="0">Группа</option>
+        <option value="1">Время</option>
+        <option value="2">Предмет</option>
+        <option value="3">Преподаватель</option>
+        <option value="4">Аудитория</option>
+    </select>
+    <table>
+        <tr>
+            <th>Группа</th>
+            <th>Время</th>
+            <th>Предмет</th>
+            <th>Преподаватель</th>
+            <th>Аудитория</th>
+        </tr>
+        {% for entry in schedule %}
+        <tr>
+            <td>{{ entry.group_name }}</td>
+            <td>{{ entry.time_slot }}</td>
+            <td>{{ entry.course_name }}</td>
+            <td>{{ entry.teacher_name }}</td>
+            <td>{{ entry.room_name }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

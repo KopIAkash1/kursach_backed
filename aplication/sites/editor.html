@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор расписания</title>
+    <style>
+        form{
+            position: absolute;
+            top: 0px;
+            left: 10px;
+        }
+        h1 {
+            margin-left: 40%;
+        }
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        th:first-child{
+            width:50px;
+        }
+        th:last-child {
+            width: 50px;
+        }
+        button {
+            background-color: #5cb85c; /* Цвет кнопки */
+            color: white; /* Цвет текста кнопки */
+            border: none; /* Убираем границу */
+            border-radius: 4px; /* Скругляем углы */
+            padding: 10px; /* Отступы внутри кнопки */
+            font-size: 20px; /* Размер шрифта */
+            cursor: pointer; /* Указатель при наведении */
+            margin-top: 20px;
+        }
+        th.time_label{
+            display: table-cell;
+        }
+        th.delete_time{
+            width:50px
+        }
+    </style>
+</head>
+<body>
+    <form action="http://192.168.1.106:8000/main" method="get">
+        <button type="submit" class="use-button"> Назад </button>
+    </form>
+    <h1>Редактор расписания</h1>
+    
+    <div>
+        <h2>Предмет</h2>
+        <table id="courses">
+            <tr>
+                <th>course_id</th>
+                <th>Название</th>
+                <th>Удалить</th>
+            </tr>
+        </table>
+        <button onclick="addRow('courses')">Добавить строку</button>
+    </div>
+
+    <div>
+        <h2>Преподаватели/Учителя</h2>
+        <table id="teachers">
+            <tr>
+                <th>teacher_id</th>
+                <th>ФИО</th>
+                <th>Удалить</th>
+            </tr>
+        </table>
+        <button onclick="addRow('teachers')">Добавить строку</button>
+    </div>
+
+    <div>
+        <h2>Аудитории/Классы</h2>
+        <table id="rooms">
+            <tr>
+                <th>room_id</th>
+                <th>Номер аудитории</th>
+                <th>Удалить</th>
+            </tr>
+        </table>
+        <button onclick="addRow('rooms')">Добавить строку</button>
+    </div>
+
+    <div>
+        <h2>Временные интвералы</h2>
+        <table id="time_slots">
+            <tr>
+                <th class="time_label">Временное интвервал формата чч:мм - чч:мм</th>
+                <th class="delete_time">Удалить</th>
+            </tr>
+        </table>
+        <button onclick="addRow('time_slots', false)">Добавить строку</button>
+    </div>
+
+    <div>
+        <h2>Группа/Класс</h2>
+        <table id="groups">
+            <tr>
+                <th>group_id</th>
+                <th>Номер/Название</th>
+                <th>Удалить</th>
+            </tr>
+        </table>
+        <button onclick="addRow('groups')">Добавить строку</button>
+    </div>
+
+    <button onclick="exportToJson()">Экспорт в JSON</button>
+
+    <script>
+        function addRow(tableId, autoId = true) {
+            const table = document.getElementById(tableId);
+            const newRow = table.insertRow();
+            const colCount = table.rows[0].cells.length;
+
+            for (let i = 0; i < colCount - 1; i++) {
+                const newCell = newRow.insertCell();
+                if (autoId && i === 0) {
+                    // Автоматическое присвоение ID
+                    const id = table.rows.length - 1;
+                    newCell.textContent = id;
+                } else {
+                    const input = document.createElement("input");
+                    input.type = "text";
+                    newCell.appendChild(input);
+                }
+            }
+
+            // Добавление кнопки удаления
+            const deleteCell = newRow.insertCell();
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Удалить";
+            deleteButton.onclick = () => {
+                newRow.remove();
+                updateIds(tableId); // Обновляем ID после удаления строки
+            };
+            deleteCell.appendChild(deleteButton);
+        }
+
+        function updateIds(tableId) {
+            const table = document.getElementById(tableId);
+            const rows = Array.from(table.rows).slice(1); // Пропускаем заголовок
+
+            rows.forEach((row, index) => {
+                const idCell = row.cells[0];
+                if (idCell) idCell.textContent = index + 1; // Присваиваем новый ID
+            });
+        }
+
+        function exportToJson() {
+            const tables = ["courses", "teachers", "rooms", "time_slots", "groups"];
+            const headerMap = {
+                "course_id" : "course_id",
+                "teacher_id" : "teacher_id",
+                "room_id" : "room_id",
+                "group_id" : "group_id",
+                "Название": "name",
+                "ФИО": "name",
+                "Номер аудитории": "name",
+                "Временное интвервал формата чч:мм - чч:мм": "time_slots",
+                "Номер/Название": "name"
+            };
+            const result = {};
+
+            tables.forEach(tableId => {
+                const table = document.getElementById(tableId);
+                const rows = Array.from(table.rows).slice(1); // Пропускаем заголовок
+                const data = [];
+                rows.forEach(row => {
+                    const cells = Array.from(row.cells).slice(0, -1); // Пропускаем кнопку "Удалить"
+                    const obj = {};
+                    cells.forEach((cell, index) => {
+                        console.log(table.rows[0].cells[index].textContent)
+                        const header = headerMap[table.rows[0].cells[index].textContent]
+                        const cellValue = cell.querySelector("input")
+                            ? cell.querySelector("input").value
+                            : cell.textContent;
+
+                        // Проверяем, является ли заголовок одним из ID и конвертируем в int
+                        if (header === "course_id" || header === "teacher_id" || header === "room_id" || header === "group_id") {
+                            obj[header] = parseInt(cellValue, 10); // Конвертируем в целое число
+                        } else {
+                            obj[header] = cellValue; // Оставляем как есть
+                        }
+                    });
+                    if (tableId === "time_slots") {
+                        data.push(obj["time_slots"]);
+                    } else {
+                        data.push(obj);
+                    }
+                });
+
+                result[tableId] = data;
+            });
+
+            // Скачивание JSON
+            /*const blob = new Blob([JSON.stringify(result, null, 4)], { type: "application/json" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "data.json";
+            link.click();*/
+            const blob = new Blob([JSON.stringify(result, null, 4)], { type: "application/json" });
+            const formData = new FormData();
+            formData.append("new_json", blob, "data.json"); // Название файла и его содержимое
+            fetch("http://192.168.1.106:8000/upload_json", {
+                method: "POST",
+                credentials: "include", // Включает куки текущего пользователя
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = "http://192.168.1.106:8000/main";
+                } else {
+                    throw new Error("Ошибка при отправке файла");
+                }
+            })
+            .then(data => {
+                console.log("Ответ от сервера:", data);
+                 // Замените на нужный URL
+            })
+            .catch(error => {
+                console.log("Ошибка:", error);
+            });
+            }                
+    </script>
+</body>
+</html>

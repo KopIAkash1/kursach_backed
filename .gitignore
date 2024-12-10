@@ -1,0 +1,6 @@
+aplication/avatars
+aplication/users_jsons/
+aplication/users_html/
+venv/
+postgresql/
+redis/

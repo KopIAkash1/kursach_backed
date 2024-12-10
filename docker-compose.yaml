@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  web-app:
+    build: .
+    container_name: kursach_uvicorn
+    logging: {driver: journald}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./aplication:/var/www/html
+    restart: always
+    depends_on:
+      - redis
+      - postgres
+  postgres:
+    image: postgres:latest
+    container_name: kursach_postgre
+    ports:
+      - "5432:5432"  # Проброс порта
+    environment:
+      POSTGRES_USER: main_data         
+      POSTGRES_PASSWORD: password 
+      POSTGRES_DB: main_data_db       
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  redis:
+    image: redis:latest
+    container_name: kursach_redis
+    ports:
+      - "6378:6379"
+    restart: always
+    volumes:
+      - ./redis:/data

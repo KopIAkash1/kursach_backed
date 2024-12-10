@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная</title>
+    <style>
+        /* Общие стили для body */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .left-panel {
+            background-color: white; /* Белый фон */
+            width: 50%; /* Половина экрана */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+            
+        /* Стиль для левой части экрана (серый фон) */
+        .right-panel {
+            background-color: #808080; /* Серый фон */
+            width: 50%; /* Половина экрана */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            height: 100%;
+        }
+
+        /* Стиль для правой части экрана (белый фон) */
+        
+
+        /* Стили для аватара */
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #cccccc; /* Цвет для аватара, можно заменить на изображение */
+            margin-bottom: 20px;
+        }
+
+        /* Стили для имени пользователя */
+        .username {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Стили для списка */
+        ul {
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .form-group {
+            display: flex; /* Используем flexbox для выравнивания элементов */
+            flex-direction: column; /* Элементы располагаются вертикально */
+            align-items: stretch; /* Элементы занимают всю ширину */
+            margin-bottom: 15px;
+            width: 30%; /* Устанавливаем ширину 100% для формы */
+        }
+        .upload-button {
+            background-color: #5cb85c; /* Цвет кнопки */
+            color: white; /* Цвет текста кнопки */
+            border: none; /* Убираем границу */
+            border-radius: 4px; /* Скругляем углы */
+            padding: 10px; /* Отступы внутри кнопки */
+            font-size: 20px; /* Размер шрифта */
+            cursor: pointer; /* Указатель при наведении */
+        }
+        .use-button{
+            font-size:15px;
+        }
+        form {
+            width: 30%; /* Уменьшаем ширину для учета отступов */
+            background-color: #5cb85c;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 20px;
+            margin: 10px;
+        }
+        button {
+            width: 100%; /* Задаем ширину кнопки 100% */
+            border: none;
+            background-color: #00000000;
+            border-radius: 4px;
+            color: white;
+            font-size: 35px;
+        }
+        input[type="file"] {
+            width: calc(100% - 20px); /* Уменьшаем ширину для учета отступов */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px; /* Отступ справа для полей ввода */
+        }
+    </style>
+</head>
+<body>
+    <div class="left-panel">
+        Сгенерированное расписание
+        <table>
+            <tr>
+                <th>JSON</th>
+                <th>Ссылка</th>
+                <th>Удалить</th>
+            </tr>
+            {% for entry in shedules_list %}
+            <tr>
+                <td>{{ entry[0] }}</td>
+                <td><a href="http://192.168.1.106:8000/users_html/{{ entry[1] }}">{{ entry[1] }}</a></td> <!-- Исправлено: ссылка формата localhost:8000/users_html/entry[0] -->
+                <td><a href="http://192.168.1.106:8000/delete_schedule?delete_schedule={{ entry[1] }}">Удалить</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <!-- Левая панель -->
+    <div class="right-panel">
+        {% if avatar_path %}
+        <img src="{{ avatar_path }}" alt="Аватар" class="avatar">
+        {% endif %}
+        {% if username %}
+        <div class="username" alt="Имя пользователя">{{ username }}</div>
+        {% endif %}
+         <!-- Имя пользователя -->
+         <form action="/use_loaded_json" method="post">
+            <button type="submit" class="use-button">Использовать последний json </button>
+        </form>
+         <form action="/show_json" method="get">
+            <button type="submit" class="upload-button">Показать последний json</button>
+        </form>
+         <form action="/upload_json" method="post" enctype="multipart/form-data">
+            <input type="file" id="new_json" name="new_json" style="display: none;" onchange="this.form.submit();">
+            <button type="button" class="upload-button" onclick="document.getElementById('new_json').click();">Загрузить json</button> <!-- Кнопка для вызова input -->
+        </form>
+        <form action="/editor" method="get">
+            <button type="submit" class="editor">Редактор</button> 
+         </form>
+        <form action="/exit" method="POST" enctype="multipart/form-data">
+            <button type="submit" class="exit-button">Выйти</button>
+        </form>
+        {% if error_message %}
+        <div style="color: red; margin-top: 20px;">
+            {{ error_message }}
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

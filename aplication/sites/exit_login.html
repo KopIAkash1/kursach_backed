@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выход из пользователя</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .success-message {
+            color: green;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.location.href = "http://localhost:8000/";
+            }, 3000);
+        };
+    </script>
+    <h1 class="success-message">Сессия окончена!</h1>
+    <p>Вы будете перенаправлены на страницу авторизации <span id="username"></span>!</p>
+    <a href="/">Вернуться на главную страницу</a>
+
+    <script>
+        // Получаем имя пользователя из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        document.getElementById('username').textContent = username;
+    </script>
+</body>
+</html>
